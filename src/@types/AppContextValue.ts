@@ -1,0 +1,13 @@
+import type { ResolutionType } from '../@enums/ResolutionType';
+import type { AppState } from './AppState';
+import type { Player } from './Player';
+
+export interface AppContextValue extends AppState {
+  importPlayers: (players: Player[]) => void;
+  toggleDraftedByMe: (playerId: string, checked: boolean) => void;
+  toggleDraftedOther: (playerId: string, checked: boolean) => void;
+  addCoach: (name: string) => void;
+  renameCoach: (id: string, name: string) => void;
+  removeCoach: (id: string, resolution: ResolutionType) => void;
+  setActiveCoach: (id: string) => void;
+}
