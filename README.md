@@ -5,6 +5,8 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=lanceheld_offline-draft&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=lanceheld_offline-draft)
 [![Security issues](https://sonarcloud.io/api/project_badges/measure?project=lanceheld_offline-draft&metric=software_quality_security_issues)](https://sonarcloud.io/summary/new_code?id=lanceheld_offline-draft)
 
+**[Live demo](https://lanceheld.github.io/offline-draft/)**
+
 A single-page app for tracking an in-person (offline) fantasy football draft. Load a
 ranked player list from a CSV, then use it as a live draft board: check players off as
 they're drafted, track who's on your own roster vs. drafted by other coaches, and get
