@@ -7,6 +7,7 @@ export const ActionType = {
   RenameCoach: 'RENAME_COACH',
   RemoveCoach: 'REMOVE_COACH',
   SetActiveCoach: 'SET_ACTIVE_COACH',
+  SetRosterLimits: 'SET_ROSTER_LIMITS',
 } as const;
 
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];

@@ -31,7 +31,9 @@ export const CsvUploader = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     const text = await file.text();
     const result = parsePlayersCsv(text);
     setErrors(result.errors);
@@ -49,7 +51,9 @@ export const CsvUploader = () => {
   };
 
   const confirmImport = () => {
-    if (pendingPlayers) importPlayers(pendingPlayers);
+    if (pendingPlayers) {
+      importPlayers(pendingPlayers);
+    }
     setPendingPlayers(null);
     setConfirmOpen(false);
   };

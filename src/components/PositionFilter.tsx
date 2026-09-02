@@ -39,8 +39,11 @@ export const PositionFilter = ({ value, onChange }: PositionFilterProps) => {
   };
 
   const togglePosition = (pos: Position) => {
-    if (value.includes(pos)) onChange(value.filter((p) => p !== pos));
-    else onChange([...value, pos]);
+    if (value.includes(pos)) {
+      onChange(value.filter((p) => p !== pos));
+    } else {
+      onChange([...value, pos]);
+    }
   };
 
   return (

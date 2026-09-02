@@ -11,11 +11,17 @@ import {
 } from '@mui/material';
 import { useMemo } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
-import { POSITIONS } from '../@enums/Position';
-import { ROSTER_LIMITS, ROSTER_SIZE } from '../@types/RosterLimits';
+import {
+  FLEX_ELIGIBLE_POSITIONS,
+  ROSTER_SLOTS,
+  type RosterSlot,
+} from '../@enums/RosterSlot';
+import { getRosterSize } from '../@types/RosterLimits';
+import type { Player } from '../@types/Player';
+import type { Position } from '../@enums/Position';
 
 export const RosterSummary = () => {
-  const { players, coaches, activeCoachId } = useAppContext();
+  const { players, coaches, activeCoachId, rosterLimits } = useAppContext();
   const activeCoach = coaches.find((c) => c.id === activeCoachId);
 
   const myPlayers = useMemo(
@@ -23,14 +29,37 @@ export const RosterSummary = () => {
     [players, activeCoachId],
   );
 
-  const byPosition = useMemo(() => {
-    const map = new Map<string, typeof myPlayers>();
-    for (const pos of POSITIONS) map.set(pos, []);
-    for (const p of myPlayers) map.get(p.position)?.push(p);
+  const bySlot = useMemo(() => {
+    const byPosition = new Map<Position, Player[]>();
+    for (const p of myPlayers) {
+      const list = byPosition.get(p.position) ?? [];
+      list.push(p);
+      byPosition.set(p.position, list);
+    }
+    for (const list of byPosition.values()) {
+      list.sort((a, b) => a.rank - b.rank);
+    }
+
+    const map = new Map<RosterSlot, Player[]>();
+    const flexOverflow: Player[] = [];
+    for (const slot of ROSTER_SLOTS) {
+      if (slot === 'FLEX') {
+        continue;
+      }
+      const list = byPosition.get(slot) ?? [];
+      const limit = rosterLimits[slot];
+      map.set(slot, list.slice(0, limit));
+      if (FLEX_ELIGIBLE_POSITIONS.includes(slot)) {
+        flexOverflow.push(...list.slice(limit));
+      }
+    }
+    flexOverflow.sort((a, b) => a.rank - b.rank);
+    map.set('FLEX', flexOverflow.slice(0, rosterLimits.FLEX));
     return map;
-  }, [myPlayers]);
+  }, [myPlayers, rosterLimits]);
 
   const totalDrafted = myPlayers.length;
+  const rosterSize = useMemo(() => getRosterSize(rosterLimits), [rosterLimits]);
 
   return (
     <Paper variant="outlined" sx={{ p: 2, position: 'sticky', top: 16 }}>
@@ -46,29 +75,33 @@ export const RosterSummary = () => {
             Total roster
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {totalDrafted} / {ROSTER_SIZE}
+            {totalDrafted} / {rosterSize}
           </Typography>
         </Stack>
         <LinearProgress
           variant="determinate"
-          value={Math.min(100, (totalDrafted / ROSTER_SIZE) * 100)}
+          value={
+            rosterSize > 0
+              ? Math.min(100, (totalDrafted / rosterSize) * 100)
+              : 0
+          }
         />
       </Box>
 
       <Stack spacing={1.5}>
-        {POSITIONS.map((pos) => {
-          const list = byPosition.get(pos) ?? [];
-          const limit = ROSTER_LIMITS[pos];
+        {ROSTER_SLOTS.filter((slot) => rosterLimits[slot] > 0).map((slot) => {
+          const list = bySlot.get(slot) ?? [];
+          const limit = rosterLimits[slot];
           const full = list.length >= limit;
           return (
-            <Box key={pos}>
+            <Box key={slot}>
               <Stack
                 direction="row"
                 spacing={1}
                 sx={{ alignItems: 'center', mb: 0.5 }}
               >
                 <Chip
-                  label={pos}
+                  label={slot}
                   size="small"
                   color={full ? 'success' : 'default'}
                   variant={full ? 'filled' : 'outlined'}

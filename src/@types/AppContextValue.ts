@@ -1,6 +1,7 @@
 import type { ResolutionType } from '../@enums/ResolutionType';
 import type { AppState } from './AppState';
 import type { Player } from './Player';
+import type { RosterLimits } from './RosterLimits';
 
 export interface AppContextValue extends AppState {
   importPlayers: (players: Player[]) => void;
@@ -10,4 +11,5 @@ export interface AppContextValue extends AppState {
   renameCoach: (id: string, name: string) => void;
   removeCoach: (id: string, resolution: ResolutionType) => void;
   setActiveCoach: (id: string) => void;
+  setRosterLimits: (limits: RosterLimits) => void;
 }

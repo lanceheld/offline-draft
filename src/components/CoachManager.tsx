@@ -38,7 +38,9 @@ export const CoachManager = () => {
 
   const handleAddCoach = () => {
     const name = newCoachName.trim();
-    if (!name) return;
+    if (!name) {
+      return;
+    }
     addCoach(name);
     setNewCoachName('');
   };
@@ -53,14 +55,18 @@ export const CoachManager = () => {
   };
 
   const handleResolveRemoval = (resolution: ResolutionType) => {
-    if (!pendingRemoval) return;
+    if (!pendingRemoval) {
+      return;
+    }
     removeCoach(pendingRemoval.id, resolution);
     setPendingRemoval(null);
   };
 
   const handleRenameCommit = (id: string) => {
     const name = editNames[id]?.trim();
-    if (name) renameCoach(id, name);
+    if (name) {
+      renameCoach(id, name);
+    }
     setEditNames((prev) => {
       const next = { ...prev };
       delete next[id];
@@ -120,7 +126,9 @@ export const CoachManager = () => {
                   }
                   onBlur={() => handleRenameCommit(c.id)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleRenameCommit(c.id);
+                    if (e.key === 'Enter') {
+                      handleRenameCommit(c.id);
+                    }
                   }}
                 />
                 <Tooltip
@@ -157,7 +165,9 @@ export const CoachManager = () => {
               value={newCoachName}
               onChange={(e) => setNewCoachName(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAddCoach();
+                if (e.key === 'Enter') {
+                  handleAddCoach();
+                }
               }}
             />
             <Button variant="contained" onClick={handleAddCoach}>

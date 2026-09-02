@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import type { AppContextValue } from '../../@types/AppContextValue';
 import type { Coach } from '../../@types/Coach';
 import type { Player } from '../../@types/Player';
+import { DEFAULT_ROSTER_LIMITS } from '../../@types/RosterLimits';
 import { AppContext, useAppContext } from '../useAppContext';
 
 const makeContextValue = (
@@ -12,6 +13,7 @@ const makeContextValue = (
     players: [] as Player[],
     coaches: [] as Coach[],
     activeCoachId: null,
+    rosterLimits: DEFAULT_ROSTER_LIMITS,
     importPlayers: jest.fn(),
     toggleDraftedByMe: jest.fn(),
     toggleDraftedOther: jest.fn(),
@@ -19,6 +21,7 @@ const makeContextValue = (
     renameCoach: jest.fn(),
     removeCoach: jest.fn(),
     setActiveCoach: jest.fn(),
+    setRosterLimits: jest.fn(),
     ...overrides,
   };
 };

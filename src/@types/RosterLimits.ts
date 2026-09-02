@@ -1,9 +1,12 @@
-import type { Position } from '../@enums/Position';
+import type { RosterSlot } from '../@enums/RosterSlot';
 
-export const ROSTER_LIMITS: Record<Position, number> = {
+export type RosterLimits = Record<RosterSlot, number>;
+
+export const DEFAULT_ROSTER_LIMITS: RosterLimits = {
   QB: 2,
   RB: 5,
   WR: 5,
+  FLEX: 0,
   TE: 2,
   K: 2,
   DST: 2,
@@ -11,7 +14,5 @@ export const ROSTER_LIMITS: Record<Position, number> = {
   HC: 2,
 };
 
-export const ROSTER_SIZE = Object.values(ROSTER_LIMITS).reduce(
-  (a, b) => a + b,
-  0,
-);
+export const getRosterSize = (limits: RosterLimits): number =>
+  Object.values(limits).reduce((a, b) => a + b, 0);

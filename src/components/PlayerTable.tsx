@@ -22,6 +22,7 @@ import type { Player } from '../@types/Player';
 import type { Position } from '../@enums/Position';
 import { SortableColumn } from '../@enums/SortableColumn';
 import { SortDirection } from '../@enums/SortDirection';
+import { hasOpenRosterSpot } from '../rosterAssignment';
 import { NameFilter } from './NameFilter';
 import { PositionFilter } from './PositionFilter';
 
@@ -36,7 +37,9 @@ const COLUMNS: ColumnDef[] = [
 const compare = (a: Player, b: Player, column: SortableColumn): number => {
   const av = a[column];
   const bv = b[column];
-  if (typeof av === 'number' && typeof bv === 'number') return av - bv;
+  if (typeof av === 'number' && typeof bv === 'number') {
+    return av - bv;
+  }
   return String(av).localeCompare(String(bv));
 };
 
@@ -45,6 +48,7 @@ export const PlayerTable = () => {
     players,
     coaches,
     activeCoachId,
+    rosterLimits,
     toggleDraftedByMe,
     toggleDraftedOther,
   } = useAppContext();
@@ -59,14 +63,18 @@ export const PlayerTable = () => {
 
   const coachNameById = useMemo(() => {
     const map = new Map<string, string>();
-    for (const c of coaches) map.set(c.id, c.name);
+    for (const c of coaches) {
+      map.set(c.id, c.name);
+    }
     return map;
   }, [coaches]);
 
   const myPositionByeKeys = useMemo(() => {
     const set = new Set<string>();
     for (const p of players) {
-      if (p.draftedBy === activeCoachId) set.add(`${p.position}|${p.bye}`);
+      if (p.draftedBy === activeCoachId) {
+        set.add(`${p.position}|${p.bye}`);
+      }
     }
     return set;
   }, [players, activeCoachId]);
@@ -74,9 +82,21 @@ export const PlayerTable = () => {
   const myPositionTeamKeys = useMemo(() => {
     const set = new Set<string>();
     for (const p of players) {
-      if (p.draftedBy === activeCoachId) set.add(`${p.position}|${p.team}`);
+      if (p.draftedBy === activeCoachId) {
+        set.add(`${p.position}|${p.team}`);
+      }
     }
     return set;
+  }, [players, activeCoachId]);
+
+  const myPositionCounts = useMemo(() => {
+    const counts: Partial<Record<Position, number>> = {};
+    for (const p of players) {
+      if (p.draftedBy === activeCoachId) {
+        counts[p.position] = (counts[p.position] ?? 0) + 1;
+      }
+    }
+    return counts;
   }, [players, activeCoachId]);
 
   const visiblePlayers = useMemo(() => {
@@ -90,7 +110,9 @@ export const PlayerTable = () => {
       list = list.filter((p) => p.name.toLowerCase().includes(trimmedName));
     }
     const sorted = [...list].sort((a, b) => compare(a, b, sortColumn));
-    if (sortDirection === SortDirection.Desc) sorted.reverse();
+    if (sortDirection === SortDirection.Desc) {
+      sorted.reverse();
+    }
     return sorted;
   }, [players, positionFilter, nameFilter, sortColumn, sortDirection]);
 
@@ -194,15 +216,25 @@ export const PlayerTable = () => {
               const hasTeamClash =
                 isUndrafted &&
                 myPositionTeamKeys.has(`${player.position}|${player.team}`);
+              const rosterFull =
+                !isMine &&
+                !hasOpenRosterSpot(
+                  myPositionCounts,
+                  player.position,
+                  rosterLimits,
+                );
 
               return (
                 <TableRow
                   key={player.id}
                   sx={{
                     bgcolor: (theme) => {
-                      if (isMine)
+                      if (isMine) {
                         return alpha(theme.palette.success.main, 0.18);
-                      if (isRed) return alpha(theme.palette.error.main, 0.18);
+                      }
+                      if (isRed) {
+                        return alpha(theme.palette.error.main, 0.18);
+                      }
                       return undefined;
                     },
                   }}
@@ -254,16 +286,20 @@ export const PlayerTable = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Tooltip
-                      title="Already drafted by another coach"
-                      disableHoverListener={!draftedByOtherCoach}
-                      disableFocusListener={!draftedByOtherCoach}
-                      disableTouchListener={!draftedByOtherCoach}
+                      title={
+                        draftedByOtherCoach
+                          ? 'Already drafted by another coach'
+                          : `No ${player.position} roster spots remaining`
+                      }
+                      disableHoverListener={!draftedByOtherCoach && !rosterFull}
+                      disableFocusListener={!draftedByOtherCoach && !rosterFull}
+                      disableTouchListener={!draftedByOtherCoach && !rosterFull}
                     >
                       <span>
                         <Checkbox
                           size="small"
                           checked={isMine}
-                          disabled={draftedByOtherCoach}
+                          disabled={draftedByOtherCoach || rosterFull}
                           onChange={(e) =>
                             toggleDraftedByMe(player.id, e.target.checked)
                           }
