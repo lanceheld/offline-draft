@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import type { Coach } from '../../@types/Coach';
 import type { Player } from '../../@types/Player';
+import { DEFAULT_ROSTER_LIMITS } from '../../@types/RosterLimits';
 import { useAppContext } from '../../hooks/useAppContext';
 import { RosterSummary } from '../RosterSummary';
 
@@ -31,6 +32,7 @@ const makeContext = (
     players: [],
     coaches,
     activeCoachId: 'c1',
+    rosterLimits: DEFAULT_ROSTER_LIMITS,
     importPlayers: jest.fn(),
     toggleDraftedByMe: jest.fn(),
     toggleDraftedOther: jest.fn(),
@@ -38,6 +40,7 @@ const makeContext = (
     renameCoach: jest.fn(),
     removeCoach: jest.fn(),
     setActiveCoach: jest.fn(),
+    setRosterLimits: jest.fn(),
     ...overrides,
   };
 };
@@ -107,5 +110,53 @@ describe('RosterSummary', () => {
     render(<RosterSummary />);
 
     expect(screen.getByText('Bye 9')).toBeInTheDocument();
+  });
+
+  it('spills RBs and WRs beyond their dedicated limit into the FLEX slot', () => {
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        rosterLimits: { ...DEFAULT_ROSTER_LIMITS, RB: 1, WR: 1, FLEX: 1 },
+        players: [
+          makePlayer({
+            id: 'p1',
+            rank: 1,
+            name: 'Starter RB',
+            position: 'RB',
+            draftedBy: 'c1',
+          }),
+          makePlayer({
+            id: 'p2',
+            rank: 2,
+            name: 'Flex RB',
+            position: 'RB',
+            draftedBy: 'c1',
+          }),
+        ],
+      }),
+    );
+    render(<RosterSummary />);
+
+    expect(screen.getByText('Starter RB (BUF)')).toBeInTheDocument();
+    expect(screen.getByText('Flex RB (BUF)')).toBeInTheDocument();
+    expect(screen.getByText('FLEX')).toBeInTheDocument();
+  });
+
+  it('hides a position from the summary when its roster limit is 0', () => {
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        rosterLimits: { ...DEFAULT_ROSTER_LIMITS, DP: 0 },
+      }),
+    );
+    render(<RosterSummary />);
+
+    expect(screen.queryByText('DP')).not.toBeInTheDocument();
+    expect(screen.getByText('QB')).toBeInTheDocument();
+  });
+
+  it('hides FLEX from the summary by default since its limit is 0', () => {
+    mockedUseAppContext.mockReturnValue(makeContext());
+    render(<RosterSummary />);
+
+    expect(screen.queryByText('FLEX')).not.toBeInTheDocument();
   });
 });

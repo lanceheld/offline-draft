@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import * as db from '../../db';
 import type { Coach } from '../../@types/Coach';
 import type { Player } from '../../@types/Player';
+import { DEFAULT_ROSTER_LIMITS } from '../../@types/RosterLimits';
 import { AppProvider } from '../AppContext';
 import { useAppContext } from '../../hooks/useAppContext';
 
@@ -30,11 +31,15 @@ const makeCoach = (overrides: Partial<Coach> = {}): Coach => {
 
 const Probe = () => {
   const ctx = useAppContext();
-  if (!ctx.loaded) return <div>loading</div>;
+  if (!ctx.loaded) {
+    return <div>loading</div>;
+  }
   return (
     <div>
       <div data-testid="active-coach">{ctx.activeCoachId}</div>
       <div data-testid="coach-count">{ctx.coaches.length}</div>
+      <div data-testid="rb-limit">{ctx.rosterLimits.RB}</div>
+      <div data-testid="flex-limit">{ctx.rosterLimits.FLEX}</div>
       <ul>
         {ctx.players.map((p) => (
           <li key={p.id} data-testid={`player-${p.id}`}>
@@ -61,6 +66,13 @@ const Probe = () => {
         remove active coach (other)
       </button>
       <button onClick={() => ctx.setActiveCoach('c2')}>switch to c2</button>
+      <button
+        onClick={() =>
+          ctx.setRosterLimits({ ...ctx.rosterLimits, RB: 3, FLEX: 2 })
+        }
+      >
+        update roster limits
+      </button>
     </div>
   );
 };
@@ -396,6 +408,241 @@ describe('AppProvider / useAppContext', () => {
 
     expect(screen.getByTestId('active-coach')).toHaveTextContent('c2');
     expect(mockedDb.saveMeta).toHaveBeenCalledWith('activeCoachId', 'c2');
+  });
+
+  it('hydrates roster limits stored in meta, falling back to defaults for unknown keys', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return JSON.stringify({ RB: 7 });
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('rb-limit')).toHaveTextContent('7'),
+    );
+    expect(screen.getByTestId('flex-limit')).toHaveTextContent(
+      String(DEFAULT_ROSTER_LIMITS.FLEX),
+    );
+  });
+
+  it('falls back to default roster limits when stored meta is malformed', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return 'not-json';
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('rb-limit')).toHaveTextContent(
+        String(DEFAULT_ROSTER_LIMITS.RB),
+      ),
+    );
+  });
+
+  it('falls back to default roster limits when stored meta parses to a non-object', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return 'null';
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('rb-limit')).toHaveTextContent(
+        String(DEFAULT_ROSTER_LIMITS.RB),
+      ),
+    );
+  });
+
+  it('falls back to default roster limits when stored meta parses to an array', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return JSON.stringify([1, 2, 3]);
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('rb-limit')).toHaveTextContent(
+        String(DEFAULT_ROSTER_LIMITS.RB),
+      ),
+    );
+  });
+
+  it('ignores non-numeric roster limit values and keeps the default for that slot', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return JSON.stringify({ RB: 'oops', FLEX: 3 });
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('flex-limit')).toHaveTextContent('3'),
+    );
+    expect(screen.getByTestId('rb-limit')).toHaveTextContent(
+      String(DEFAULT_ROSTER_LIMITS.RB),
+    );
+  });
+
+  it('ignores negative and non-finite roster limit values, keeping the default for that slot', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return JSON.stringify({ RB: -1, FLEX: 4 });
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('flex-limit')).toHaveTextContent('4'),
+    );
+    expect(screen.getByTestId('rb-limit')).toHaveTextContent(
+      String(DEFAULT_ROSTER_LIMITS.RB),
+    );
+  });
+
+  it('ignores non-integer roster limit values, keeping the default for that slot', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return JSON.stringify({ RB: 2.5, FLEX: 4 });
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('flex-limit')).toHaveTextContent('4'),
+    );
+    expect(screen.getByTestId('rb-limit')).toHaveTextContent(
+      String(DEFAULT_ROSTER_LIMITS.RB),
+    );
+  });
+
+  it('ignores unknown keys in stored roster limits', async () => {
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockImplementation(async (key: string) => {
+      if (key === 'activeCoachId') {
+        return 'c1';
+      }
+      if (key === 'rosterLimits') {
+        return JSON.stringify({ RB: 4, NOT_A_SLOT: 99 });
+      }
+      return undefined;
+    });
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('rb-limit')).toHaveTextContent('4'),
+    );
+  });
+
+  it('setRosterLimits updates state and persists the new limits', async () => {
+    const user = userEvent.setup();
+    mockedDb.loadPlayers.mockResolvedValue([]);
+    mockedDb.loadCoaches.mockResolvedValue([makeCoach({ id: 'c1' })]);
+    mockedDb.loadMeta.mockResolvedValue('c1');
+
+    render(
+      <AppProvider>
+        <Probe />
+      </AppProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('active-coach')).toHaveTextContent('c1'),
+    );
+
+    await user.click(screen.getByText('update roster limits'));
+
+    expect(screen.getByTestId('rb-limit')).toHaveTextContent('3');
+    expect(screen.getByTestId('flex-limit')).toHaveTextContent('2');
+    expect(mockedDb.saveMeta).toHaveBeenCalledWith(
+      'rosterLimits',
+      JSON.stringify({ ...DEFAULT_ROSTER_LIMITS, RB: 3, FLEX: 2 }),
+    );
   });
 
   it('throws when useAppContext is used outside of AppProvider', () => {

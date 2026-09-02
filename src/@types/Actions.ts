@@ -2,6 +2,7 @@ import { ActionType } from '../@enums/ActionType';
 import type { ResolutionType } from '../@enums/ResolutionType';
 import type { Coach } from './Coach';
 import type { Player } from './Player';
+import type { RosterLimits } from './RosterLimits';
 
 export type Actions =
   | {
@@ -9,6 +10,7 @@ export type Actions =
       players: Player[];
       coaches: Coach[];
       activeCoachId: string | null;
+      rosterLimits: RosterLimits;
     }
   | { type: typeof ActionType.ImportPlayers; players: Player[] }
   | {
@@ -28,4 +30,5 @@ export type Actions =
       id: string;
       resolution: ResolutionType;
     }
-  | { type: typeof ActionType.SetActiveCoach; id: string };
+  | { type: typeof ActionType.SetActiveCoach; id: string }
+  | { type: typeof ActionType.SetRosterLimits; limits: RosterLimits };

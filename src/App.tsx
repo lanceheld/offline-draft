@@ -9,6 +9,7 @@ import {
 import { CoachManager } from './components/CoachManager';
 import { CsvUploader } from './components/CsvUploader';
 import { PlayerTable } from './components/PlayerTable';
+import { RosterSettings } from './components/RosterSettings';
 import { RosterSummary } from './components/RosterSummary';
 import { useAppContext } from './hooks/useAppContext';
 
@@ -27,6 +28,7 @@ const AppShell = () => {
             Offline Draft Tracker
           </Typography>
           <CsvUploader />
+          <RosterSettings />
           <CoachManager />
         </Toolbar>
       </AppBar>

@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Coach } from '../../@types/Coach';
 import type { Player } from '../../@types/Player';
+import { DEFAULT_ROSTER_LIMITS } from '../../@types/RosterLimits';
 import { useAppContext } from '../../hooks/useAppContext';
 import { PlayerTable } from '../PlayerTable';
 
@@ -35,6 +36,7 @@ const makeContext = (
     players: [],
     coaches,
     activeCoachId: 'c1',
+    rosterLimits: DEFAULT_ROSTER_LIMITS,
     importPlayers: jest.fn(),
     toggleDraftedByMe: jest.fn(),
     toggleDraftedOther: jest.fn(),
@@ -42,6 +44,7 @@ const makeContext = (
     renameCoach: jest.fn(),
     removeCoach: jest.fn(),
     setActiveCoach: jest.fn(),
+    setRosterLimits: jest.fn(),
     ...overrides,
   };
 };
@@ -189,6 +192,41 @@ describe('PlayerTable', () => {
     expect(otherCheckbox).toBeChecked();
     expect(otherCheckbox).toBeDisabled();
     expect(within(row).getByText(/drafted by Coach 2/)).toBeInTheDocument();
+  });
+
+  it('disables the "Mine" checkbox for an undrafted player when the position has no roster spots left', () => {
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        rosterLimits: { ...DEFAULT_ROSTER_LIMITS, QB: 1 },
+        players: [
+          makePlayer({ id: 'p1', name: 'Rostered QB', draftedBy: 'c1' }),
+          makePlayer({ id: 'p2', name: 'Bench QB' }),
+        ],
+      }),
+    );
+    render(<PlayerTable />);
+
+    const row = screen.getAllByRole('row')[2];
+    const mineCheckbox = within(row).getAllByRole('checkbox')[0];
+    expect(mineCheckbox).not.toBeChecked();
+    expect(mineCheckbox).toBeDisabled();
+  });
+
+  it('does not disable the "Mine" checkbox for a player already on the roster, even once the position is full', () => {
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        rosterLimits: { ...DEFAULT_ROSTER_LIMITS, QB: 1 },
+        players: [
+          makePlayer({ id: 'p1', name: 'Rostered QB', draftedBy: 'c1' }),
+        ],
+      }),
+    );
+    render(<PlayerTable />);
+
+    const row = screen.getAllByRole('row')[1];
+    const mineCheckbox = within(row).getAllByRole('checkbox')[0];
+    expect(mineCheckbox).toBeChecked();
+    expect(mineCheckbox).not.toBeDisabled();
   });
 
   it('calls toggleDraftedOther when the "Other" checkbox is toggled for an undrafted player', async () => {
