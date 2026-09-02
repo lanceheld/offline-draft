@@ -54,26 +54,16 @@ export const RosterSettings = () => {
   return (
     <>
       <Tooltip title="Configure roster">
-        <IconButton
-          color="inherit"
-          aria-label="Configure roster"
-          onClick={handleOpen}
-        >
+        <IconButton color="inherit" aria-label="Configure roster" onClick={handleOpen}>
           <SettingsIcon />
         </IconButton>
       </Tooltip>
 
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Configure roster</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Set how many players of each position a roster requires. A FLEX slot
-            can be filled by either a WR or an RB.
+            Set how many players of each position a roster requires. A FLEX slot can be filled by either a WR or an RB.
           </Typography>
           <Stack spacing={2}>
             {ROSTER_SLOTS.map((slot) => (

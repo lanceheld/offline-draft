@@ -1,16 +1,6 @@
 import type { Position } from './Position';
 
-export const ROSTER_SLOTS = [
-  'QB',
-  'RB',
-  'WR',
-  'FLEX',
-  'TE',
-  'K',
-  'DP',
-  'DST',
-  'HC',
-] as const;
+export const ROSTER_SLOTS = ['QB', 'RB', 'WR', 'FLEX', 'TE', 'K', 'DP', 'DST', 'HC'] as const;
 
 export type RosterSlot = (typeof ROSTER_SLOTS)[number];
 

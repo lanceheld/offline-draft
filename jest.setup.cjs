@@ -11,3 +11,9 @@ if (typeof File !== 'undefined' && !File.prototype.text) {
     });
   };
 }
+
+// jsdom doesn't implement scrollIntoView; PlayerTable calls it to keep the
+// highest-available player in view.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = function () {};
+}

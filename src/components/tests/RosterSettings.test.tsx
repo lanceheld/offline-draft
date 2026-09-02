@@ -8,9 +8,7 @@ jest.mock('../../hooks/useAppContext');
 
 const mockedUseAppContext = useAppContext as jest.Mock;
 
-const makeContext = (
-  overrides: Partial<ReturnType<typeof useAppContext>> = {},
-) => {
+const makeContext = (overrides: Partial<ReturnType<typeof useAppContext>> = {}) => {
   return {
     loaded: true,
     players: [],
@@ -37,12 +35,8 @@ describe('RosterSettings', () => {
 
     await user.click(screen.getByLabelText('Configure roster'));
 
-    expect(
-      screen.getByRole('spinbutton', { name: 'FLEX (WR/RB)' }),
-    ).toHaveValue(DEFAULT_ROSTER_LIMITS.FLEX);
-    expect(screen.getByRole('spinbutton', { name: 'RB' })).toHaveValue(
-      DEFAULT_ROSTER_LIMITS.RB,
-    );
+    expect(screen.getByRole('spinbutton', { name: 'FLEX (WR/RB)' })).toHaveValue(DEFAULT_ROSTER_LIMITS.FLEX);
+    expect(screen.getByRole('spinbutton', { name: 'RB' })).toHaveValue(DEFAULT_ROSTER_LIMITS.RB);
   });
 
   it('saves edited limits and closes the dialog', async () => {
@@ -61,11 +55,7 @@ describe('RosterSettings', () => {
       ...DEFAULT_ROSTER_LIMITS,
       FLEX: 2,
     });
-    await waitFor(() =>
-      expect(
-        screen.queryByRole('spinbutton', { name: 'FLEX (WR/RB)' }),
-      ).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByRole('spinbutton', { name: 'FLEX (WR/RB)' })).not.toBeInTheDocument());
   });
 
   it('truncates a fractional value before saving', async () => {

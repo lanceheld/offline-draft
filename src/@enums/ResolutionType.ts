@@ -3,5 +3,4 @@ export const ResolutionType = {
   Undrafted: 'undrafted',
 } as const;
 
-export type ResolutionType =
-  (typeof ResolutionType)[keyof typeof ResolutionType];
+export type ResolutionType = (typeof ResolutionType)[keyof typeof ResolutionType];

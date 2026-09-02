@@ -16,8 +16,7 @@ export const hasOpenRosterSpot = (
   }
 
   const flexUsed = FLEX_ELIGIBLE_POSITIONS.reduce(
-    (sum, pos) =>
-      sum + Math.max(0, (draftedCounts[pos] ?? 0) - rosterLimits[pos]),
+    (sum, pos) => sum + Math.max(0, (draftedCounts[pos] ?? 0) - rosterLimits[pos]),
     0,
   );
   return flexUsed < rosterLimits.FLEX;

@@ -1,4 +1,6 @@
 module.exports = {
+  resetMocks: true,
+  verbose: true,
   testEnvironment: 'jsdom',
   testMatch: ['<rootDir>/src/**/tests/**/*.test.[jt]s?(x)'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.cjs'],
@@ -7,9 +9,5 @@ module.exports = {
   },
   transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
   coverageProvider: 'babel',
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/tests/**',
-    '!src/main.tsx',
-  ],
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/tests/**', '!src/main.tsx'],
 };

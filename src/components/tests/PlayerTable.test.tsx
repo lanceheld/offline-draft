@@ -24,17 +24,16 @@ const makePlayer = (overrides: Partial<Player> = {}): Player => {
   };
 };
 
-const makeContext = (
-  overrides: Partial<ReturnType<typeof useAppContext>> = {},
-) => {
+const makeContext = (overrides: Partial<ReturnType<typeof useAppContext>> = {}) => {
   const coaches: Coach[] = [
-    { id: 'c1', name: 'Coach 1' },
-    { id: 'c2', name: 'Coach 2' },
+    { id: 'c1', name: 'Coach 1', draftPosition: 1 },
+    { id: 'c2', name: 'Coach 2', draftPosition: 2 },
   ];
   return {
     loaded: true,
     players: [],
     coaches,
+    totalCoaches: 2,
     activeCoachId: 'c1',
     rosterLimits: DEFAULT_ROSTER_LIMITS,
     importPlayers: jest.fn(),
@@ -44,6 +43,8 @@ const makeContext = (
     renameCoach: jest.fn(),
     removeCoach: jest.fn(),
     setActiveCoach: jest.fn(),
+    setCoachDraftPosition: jest.fn(),
+    setTotalCoaches: jest.fn(),
     setRosterLimits: jest.fn(),
     ...overrides,
   };
@@ -52,28 +53,27 @@ const makeContext = (
 const rowNames = () => {
   // hidden: true because an open MUI Popover marks the rest of the page aria-hidden
   const rows = screen.getAllByRole('row', { hidden: true }).slice(1); // drop header row
-  return rows.map(
-    (row) => within(row).getAllByRole('cell', { hidden: true })[2].textContent,
-  );
+  return rows.map((row) => within(row).getAllByRole('cell', { hidden: true })[2].textContent);
 };
 
 describe('PlayerTable', () => {
+  const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+
+  afterEach(() => {
+    HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
+
   it('shows an empty state when there are no players', () => {
     mockedUseAppContext.mockReturnValue(makeContext({ players: [] }));
     render(<PlayerTable />);
 
-    expect(
-      screen.getByText('No players loaded yet. Upload a CSV to get started.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('No players loaded yet. Upload a CSV to get started.')).toBeInTheDocument();
   });
 
   it('renders a row per player sorted by rank ascending by default', () => {
     mockedUseAppContext.mockReturnValue(
       makeContext({
-        players: [
-          makePlayer({ id: 'p1', name: 'Second', rank: 2 }),
-          makePlayer({ id: 'p2', name: 'First', rank: 1 }),
-        ],
+        players: [makePlayer({ id: 'p1', name: 'Second', rank: 2 }), makePlayer({ id: 'p2', name: 'First', rank: 1 })],
       }),
     );
     render(<PlayerTable />);
@@ -85,10 +85,7 @@ describe('PlayerTable', () => {
     const user = userEvent.setup();
     mockedUseAppContext.mockReturnValue(
       makeContext({
-        players: [
-          makePlayer({ id: 'p1', name: 'Second', rank: 2 }),
-          makePlayer({ id: 'p2', name: 'First', rank: 1 }),
-        ],
+        players: [makePlayer({ id: 'p1', name: 'Second', rank: 2 }), makePlayer({ id: 'p2', name: 'First', rank: 1 })],
       }),
     );
     render(<PlayerTable />);
@@ -102,10 +99,7 @@ describe('PlayerTable', () => {
     const user = userEvent.setup();
     mockedUseAppContext.mockReturnValue(
       makeContext({
-        players: [
-          makePlayer({ id: 'p1', name: 'Zed', rank: 1 }),
-          makePlayer({ id: 'p2', name: 'Ann', rank: 2 }),
-        ],
+        players: [makePlayer({ id: 'p1', name: 'Zed', rank: 1 }), makePlayer({ id: 'p2', name: 'Ann', rank: 2 })],
       }),
     );
     render(<PlayerTable />);
@@ -119,18 +113,13 @@ describe('PlayerTable', () => {
     const user = userEvent.setup();
     mockedUseAppContext.mockReturnValue(
       makeContext({
-        players: [
-          makePlayer({ id: 'p1', name: 'Josh Allen' }),
-          makePlayer({ id: 'p2', name: 'Patrick Mahomes' }),
-        ],
+        players: [makePlayer({ id: 'p1', name: 'Josh Allen' }), makePlayer({ id: 'p2', name: 'Patrick Mahomes' })],
       }),
     );
     render(<PlayerTable />);
 
     const nameHeader = screen.getByRole('columnheader', { name: /Name/ });
-    await user.click(
-      within(nameHeader).getByRole('button', { name: 'Open name filter menu' }),
-    );
+    await user.click(within(nameHeader).getByRole('button', { name: 'Open name filter menu' }));
     await user.click(await screen.findByRole('menuitem', { name: /filter/i }));
     const input = await screen.findByPlaceholderText('Search names...');
     await user.type(input, 'josh');
@@ -181,9 +170,7 @@ describe('PlayerTable', () => {
   });
 
   it('disables the "Mine" checkbox and checks "Other" when drafted by another coach', () => {
-    mockedUseAppContext.mockReturnValue(
-      makeContext({ players: [makePlayer({ id: 'p1', draftedBy: 'c2' })] }),
-    );
+    mockedUseAppContext.mockReturnValue(makeContext({ players: [makePlayer({ id: 'p1', draftedBy: 'c2' })] }));
     render(<PlayerTable />);
 
     const row = screen.getAllByRole('row')[1];
@@ -216,9 +203,7 @@ describe('PlayerTable', () => {
     mockedUseAppContext.mockReturnValue(
       makeContext({
         rosterLimits: { ...DEFAULT_ROSTER_LIMITS, QB: 1 },
-        players: [
-          makePlayer({ id: 'p1', name: 'Rostered QB', draftedBy: 'c1' }),
-        ],
+        players: [makePlayer({ id: 'p1', name: 'Rostered QB', draftedBy: 'c1' })],
       }),
     );
     render(<PlayerTable />);
@@ -266,9 +251,7 @@ describe('PlayerTable', () => {
     render(<PlayerTable />);
 
     const row = screen.getAllByRole('row')[2];
-    expect(
-      within(row).getByLabelText(/already have a QB on bye week 12/),
-    ).toBeInTheDocument();
+    expect(within(row).getByLabelText(/already have a QB on bye week 12/)).toBeInTheDocument();
   });
 
   it('flags a team clash for an undrafted player at the same position and team as one already on the roster', () => {
@@ -295,9 +278,7 @@ describe('PlayerTable', () => {
     render(<PlayerTable />);
 
     const row = screen.getAllByRole('row')[2];
-    expect(
-      within(row).getByLabelText(/already have a QB on BUF/),
-    ).toBeInTheDocument();
+    expect(within(row).getByLabelText(/already have a QB on BUF/)).toBeInTheDocument();
   });
 
   it('shows the count of visible vs total players', async () => {
@@ -326,5 +307,76 @@ describe('PlayerTable', () => {
     await user.click(await screen.findByRole('checkbox', { name: 'RB' }));
 
     expect(screen.getByText('1 of 2 players')).toBeInTheDocument();
+  });
+
+  it('scrolls the highest-ranked available player into view on initial load', () => {
+    const scrollIntoView = jest.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        players: [makePlayer({ id: 'p1', name: 'Second', rank: 2 }), makePlayer({ id: 'p2', name: 'First', rank: 1 })],
+      }),
+    );
+    render(<PlayerTable />);
+
+    const row = screen.getAllByRole('row')[1];
+    expect(within(row).getByText('First')).toBeInTheDocument();
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'center',
+    });
+    // Both the sort/filter effect and the "initial players arrived" effect
+    // run on mount; only one should actually scroll.
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips drafted players when finding the highest-ranked available player to scroll to', () => {
+    const scrollIntoView = jest.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        players: [
+          makePlayer({ id: 'p1', name: 'Best', rank: 1, draftedBy: 'c1' }),
+          makePlayer({ id: 'p2', name: 'Runner Up', rank: 2 }),
+        ],
+      }),
+    );
+    render(<PlayerTable />);
+
+    expect(scrollIntoView.mock.instances[0].textContent).toContain('Runner Up');
+  });
+
+  it('re-scrolls to the highest-ranked available player after filtering', async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = jest.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        players: [
+          makePlayer({ id: 'p1', name: 'Josh Allen', position: 'QB', rank: 1 }),
+          makePlayer({
+            id: 'p2',
+            name: 'Bijan Robinson',
+            position: 'RB',
+            rank: 2,
+          }),
+        ],
+      }),
+    );
+    render(<PlayerTable />);
+    scrollIntoView.mockClear();
+
+    const positionHeader = screen.getByRole('columnheader', {
+      name: /Position/,
+    });
+    await user.click(
+      within(positionHeader).getByRole('button', {
+        name: 'Open position filter menu',
+      }),
+    );
+    await user.click(await screen.findByRole('menuitem', { name: /filter/i }));
+    await user.click(await screen.findByRole('checkbox', { name: 'RB' }));
+
+    expect(scrollIntoView.mock.instances[0].textContent).toContain('Bijan Robinson');
   });
 });

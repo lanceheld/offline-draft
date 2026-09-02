@@ -14,5 +14,4 @@ export const DEFAULT_ROSTER_LIMITS: RosterLimits = {
   HC: 2,
 };
 
-export const getRosterSize = (limits: RosterLimits): number =>
-  Object.values(limits).reduce((a, b) => a + b, 0);
+export const getRosterSize = (limits: RosterLimits): number => Object.values(limits).reduce((a, b) => a + b, 0);

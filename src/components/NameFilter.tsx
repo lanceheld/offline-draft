@@ -37,22 +37,11 @@ export const NameFilter = ({ value, onChange }: NameFilterProps) => {
 
   return (
     <>
-      <IconButton
-        size="small"
-        onClick={handleMenuOpen}
-        aria-label="Open name filter menu"
-      >
-        <MoreVertIcon
-          fontSize="small"
-          color={isActive ? 'primary' : 'inherit'}
-        />
+      <IconButton size="small" onClick={handleMenuOpen} aria-label="Open name filter menu">
+        <MoreVertIcon fontSize="small" color={isActive ? 'primary' : 'inherit'} />
       </IconButton>
 
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={() => setMenuAnchor(null)}
-      >
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
         <MenuItem onClick={handleFilterMenuItemClick}>
           <ListItemIcon>
             <FilterAltIcon fontSize="small" />
@@ -78,11 +67,7 @@ export const NameFilter = ({ value, onChange }: NameFilterProps) => {
             }}
           >
             <Typography variant="subtitle2">Filter by name</Typography>
-            <Button
-              size="small"
-              onClick={() => onChange('')}
-              disabled={value.length === 0}
-            >
+            <Button size="small" onClick={() => onChange('')} disabled={value.length === 0}>
               Clear
             </Button>
           </Stack>

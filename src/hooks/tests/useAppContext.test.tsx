@@ -5,13 +5,12 @@ import type { Player } from '../../@types/Player';
 import { DEFAULT_ROSTER_LIMITS } from '../../@types/RosterLimits';
 import { AppContext, useAppContext } from '../useAppContext';
 
-const makeContextValue = (
-  overrides: Partial<AppContextValue> = {},
-): AppContextValue => {
+const makeContextValue = (overrides: Partial<AppContextValue> = {}): AppContextValue => {
   return {
     loaded: true,
     players: [] as Player[],
     coaches: [] as Coach[],
+    totalCoaches: 0,
     activeCoachId: null,
     rosterLimits: DEFAULT_ROSTER_LIMITS,
     importPlayers: jest.fn(),
@@ -21,6 +20,8 @@ const makeContextValue = (
     renameCoach: jest.fn(),
     removeCoach: jest.fn(),
     setActiveCoach: jest.fn(),
+    setCoachDraftPosition: jest.fn(),
+    setTotalCoaches: jest.fn(),
     setRosterLimits: jest.fn(),
     ...overrides,
   };
@@ -61,21 +62,15 @@ describe('useAppContext', () => {
   });
 
   it('throws when used outside of an AppContext.Provider', () => {
-    const consoleError = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => render(<Probe />)).toThrow(
-      'useAppContext must be used within AppProvider',
-    );
+    expect(() => render(<Probe />)).toThrow('useAppContext must be used within AppProvider');
 
     consoleError.mockRestore();
   });
 
   it('throws when the provided context value is explicitly null', () => {
-    const consoleError = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     expect(() =>
       render(
