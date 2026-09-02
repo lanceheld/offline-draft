@@ -141,3 +141,10 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Claude
+.claude/
+CLAUDE.md
+
+# MacOS
+.DS_Store
