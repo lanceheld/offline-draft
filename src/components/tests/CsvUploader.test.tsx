@@ -1,8 +1,4 @@
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-} from '@testing-library/react';
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Player } from '../../@types/Player';
 import { useAppContext } from '../../hooks/useAppContext';
@@ -26,9 +22,7 @@ const makePlayer = (overrides: Partial<Player> = {}): Player => {
   };
 };
 
-const makeContext = (
-  overrides: Partial<ReturnType<typeof useAppContext>> = {},
-) => {
+const makeContext = (overrides: Partial<ReturnType<typeof useAppContext>> = {}) => {
   return {
     loaded: true,
     players: [],
@@ -70,9 +64,7 @@ describe('CsvUploader', () => {
     await user.upload(getFileInput(container), makeCsvFile(csv));
 
     expect(ctx.importPlayers).toHaveBeenCalledTimes(1);
-    expect(ctx.importPlayers).toHaveBeenCalledWith([
-      expect.objectContaining({ name: 'Josh Allen', position: 'QB' }),
-    ]);
+    expect(ctx.importPlayers).toHaveBeenCalledWith([expect.objectContaining({ name: 'Josh Allen', position: 'QB' })]);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
@@ -86,15 +78,11 @@ describe('CsvUploader', () => {
     await user.upload(getFileInput(container), makeCsvFile(csv));
 
     expect(ctx.importPlayers).not.toHaveBeenCalled();
-    expect(
-      screen.getByText(/Uploading this CSV will replace all 1 existing player/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Uploading this CSV will replace all 1 existing player/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Replace' }));
 
-    expect(ctx.importPlayers).toHaveBeenCalledWith([
-      expect.objectContaining({ name: 'Bijan Robinson' }),
-    ]);
+    expect(ctx.importPlayers).toHaveBeenCalledWith([expect.objectContaining({ name: 'Bijan Robinson' })]);
   });
 
   it('does not import players when the replace confirmation is cancelled', async () => {
@@ -117,13 +105,10 @@ describe('CsvUploader', () => {
     mockedUseAppContext.mockReturnValue(ctx);
     const { container } = render(<CsvUploader />);
 
-    const csv =
-      'Rank,Position,Name,Team,Bye\n2,RB,Bijan Robinson,ATL,5\n3,ZZ,Bad Row,DAL,7\n';
+    const csv = 'Rank,Position,Name,Team,Bye\n2,RB,Bijan Robinson,ATL,5\n3,ZZ,Bad Row,DAL,7\n';
     await user.upload(getFileInput(container), makeCsvFile(csv));
 
-    expect(
-      screen.getByText(/Uploading this CSV will replace all 1 existing player/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Uploading this CSV will replace all 1 existing player/)).toBeInTheDocument();
     expect(screen.queryByText('CSV parsing issues')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -138,21 +123,16 @@ describe('CsvUploader', () => {
     mockedUseAppContext.mockReturnValue(ctx);
     const { container } = render(<CsvUploader />);
 
-    const csv =
-      'Rank,Position,Name,Team,Bye\n2,RB,Bijan Robinson,ATL,5\n3,ZZ,Bad Row,DAL,7\n';
+    const csv = 'Rank,Position,Name,Team,Bye\n2,RB,Bijan Robinson,ATL,5\n3,ZZ,Bad Row,DAL,7\n';
     await user.upload(getFileInput(container), makeCsvFile(csv));
 
     expect(screen.queryByText('CSV parsing issues')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Replace' }));
 
-    expect(ctx.importPlayers).toHaveBeenCalledWith([
-      expect.objectContaining({ name: 'Bijan Robinson' }),
-    ]);
+    expect(ctx.importPlayers).toHaveBeenCalledWith([expect.objectContaining({ name: 'Bijan Robinson' })]);
     expect(screen.getByText('CSV parsing issues')).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: 'Replace' }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Replace' })).not.toBeInTheDocument();
   });
 
   it('shows parsing errors and does not import when every row is invalid', async () => {
@@ -176,19 +156,12 @@ describe('CsvUploader', () => {
     mockedUseAppContext.mockReturnValue(ctx);
     const { container } = render(<CsvUploader />);
 
-    const csv =
-      'Rank,Position,Name,Team,Bye\n1,QB,Josh Allen,BUF,12\n2,ZZ,Bad Row,DAL,7\n';
+    const csv = 'Rank,Position,Name,Team,Bye\n1,QB,Josh Allen,BUF,12\n2,ZZ,Bad Row,DAL,7\n';
     await user.upload(getFileInput(container), makeCsvFile(csv));
 
-    expect(ctx.importPlayers).toHaveBeenCalledWith([
-      expect.objectContaining({ name: 'Josh Allen' }),
-    ]);
-    expect(
-      screen.getByText('Row 3: invalid Position "ZZ"'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Valid rows were still imported\./),
-    ).toBeInTheDocument();
+    expect(ctx.importPlayers).toHaveBeenCalledWith([expect.objectContaining({ name: 'Josh Allen' })]);
+    expect(screen.getByText('Row 3: invalid Position "ZZ"')).toBeInTheDocument();
+    expect(screen.getByText(/Valid rows were still imported\./)).toBeInTheDocument();
   });
 
   it('closes the error dialog when Close is clicked', async () => {

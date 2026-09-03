@@ -41,9 +41,30 @@ and with fewer mistakes.
     if you already have a player at the same position from the same NFL team.
 - **Multi-coach tracking** — add, rename, and remove coaches from a single browser
   session (useful when one person is running the board for the whole draft table).
-  Switch the "active coach" to mark picks for whoever is currently on the clock; each
-  coach's roster and drafted players are tracked independently. At least one coach
-  must always exist.
+  Each coach also has a **draft position** (their slot in the snake draft order),
+  configurable from the manage-coaches dialog; each coach's roster and drafted
+  players are tracked independently. At least one coach must always exist.
+- **Total number of coaches** — the manage-coaches dialog also has a **total number
+  of coaches** field, separate from how many you're tracking by name. Set this to
+  your league's real size and any slots beyond your tracked coaches are treated as
+  "other" drafters in the turn order — so the snake draft math, auto-advance, and
+  availability predictions stay correct even if you only track your own team (or a
+  handful of coaches) out of a bigger league. It can never be set below the highest
+  draft position assigned to a tracked coach.
+- **Auto-advancing active coach** — using each coach's draft position, the app tracks
+  whose turn it is and automatically switches the "active coach" there as soon as a
+  new pick is recorded, so you don't have to manually reselect who's on the clock
+  after every pick. Picks that land on an untracked "other" slot are skipped over
+  immediately, jumping straight to the next tracked coach rather than waiting for
+  each "other" pick to be recorded individually. (It also won't retroactively jump
+  the active coach on page load, so reopening the app doesn't yank you away from
+  wherever you left off.)
+- **Draft progress meter** — an overall progress bar across every coach's roster,
+  showing the current pick number, round, and who's on the clock, plus how many picks
+  stand between the active coach and their next turn.
+- **Predicted player availability** — based on how many picks will happen before the
+  active coach's next turn, undrafted players are flagged as likely gone, contested,
+  or likely available by then (shown as a column in the draft board).
 - **Roster summary sidebar** — for the active coach, a live count of total players
   drafted against the league roster size, plus a per-position breakdown (drafted /
   limit) with the drafted players listed under each position and their bye week.
@@ -129,6 +150,8 @@ src/
   index.css                  # global styles
   csv.ts                     # CSV parsing/validation into Player[]
   db.ts                      # IndexedDB persistence (players, coaches, meta)
+  draftOrder.ts               # snake draft position/pick-index math, auto-advance
+  availability.ts             # predicted player availability at a coach's next pick
   @enums/
     ActionType.ts             # AppContext reducer action type tags
     Position.ts               # POSITIONS list + Position type
@@ -139,7 +162,7 @@ src/
     Actions.ts                # AppContext reducer action union
     AppContextValue.ts        # shape of the useAppContext() value (state + actions)
     AppState.ts               # reducer state shape (players, coaches, activeCoachId, loaded)
-    Coach.ts                  # Coach type
+    Coach.ts                  # Coach type (incl. draft position)
     ColumnDef.ts               # player table column definition
     CsvParseResult.ts         # { players, errors } shape returned by csv.ts
     DraftDB.ts                 # idb DBSchema for IndexedDB (players/coaches/meta stores)
@@ -151,7 +174,8 @@ src/
     AppContext.tsx              # global app state (reducer) + persistence side effects
   components/
     CsvUploader.tsx             # file upload + replace-confirmation + error reporting
-    CoachManager.tsx            # add/rename/remove coaches, active coach selector
+    CoachManager.tsx            # add/rename/remove coaches, draft position, active coach selector
+    DraftProgress.tsx           # overall pick progress, on-the-clock coach
     PlayerTable.tsx             # sortable/filterable draft board with clash detection
     PositionFilter.tsx          # position multi-select filter popover
     NameFilter.tsx               # name search filter popover

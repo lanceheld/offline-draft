@@ -23,10 +23,8 @@ const makePlayer = (overrides: Partial<Player> = {}): Player => {
   };
 };
 
-const makeContext = (
-  overrides: Partial<ReturnType<typeof useAppContext>> = {},
-) => {
-  const coaches: Coach[] = [{ id: 'c1', name: 'Coach 1' }];
+const makeContext = (overrides: Partial<ReturnType<typeof useAppContext>> = {}) => {
+  const coaches: Coach[] = [{ id: 'c1', name: 'Coach 1', draftPosition: 1 }];
   return {
     loaded: true,
     players: [],

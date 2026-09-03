@@ -48,22 +48,11 @@ export const PositionFilter = ({ value, onChange }: PositionFilterProps) => {
 
   return (
     <>
-      <IconButton
-        size="small"
-        onClick={handleMenuOpen}
-        aria-label="Open position filter menu"
-      >
-        <MoreVertIcon
-          fontSize="small"
-          color={isActive ? 'primary' : 'inherit'}
-        />
+      <IconButton size="small" onClick={handleMenuOpen} aria-label="Open position filter menu">
+        <MoreVertIcon fontSize="small" color={isActive ? 'primary' : 'inherit'} />
       </IconButton>
 
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={() => setMenuAnchor(null)}
-      >
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
         <MenuItem onClick={handleFilterMenuItemClick}>
           <ListItemIcon>
             <FilterAltIcon fontSize="small" />
@@ -89,11 +78,7 @@ export const PositionFilter = ({ value, onChange }: PositionFilterProps) => {
             }}
           >
             <Typography variant="subtitle2">Filter by position</Typography>
-            <Button
-              size="small"
-              onClick={() => onChange([])}
-              disabled={value.length === 0}
-            >
+            <Button size="small" onClick={() => onChange([])} disabled={value.length === 0}>
               Clear
             </Button>
           </Stack>
@@ -101,13 +86,7 @@ export const PositionFilter = ({ value, onChange }: PositionFilterProps) => {
             {POSITIONS.map((pos) => (
               <FormControlLabel
                 key={pos}
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={value.includes(pos)}
-                    onChange={() => togglePosition(pos)}
-                  />
-                }
+                control={<Checkbox size="small" checked={value.includes(pos)} onChange={() => togglePosition(pos)} />}
                 label={pos}
               />
             ))}

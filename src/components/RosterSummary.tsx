@@ -1,21 +1,7 @@
-import {
-  Box,
-  Chip,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Chip, LinearProgress, List, ListItem, ListItemText, Paper, Stack, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
-import {
-  FLEX_ELIGIBLE_POSITIONS,
-  ROSTER_SLOTS,
-  type RosterSlot,
-} from '../@enums/RosterSlot';
+import { FLEX_ELIGIBLE_POSITIONS, ROSTER_SLOTS, type RosterSlot } from '../@enums/RosterSlot';
 import { getRosterSize } from '../@types/RosterLimits';
 import type { Player } from '../@types/Player';
 import type { Position } from '../@enums/Position';
@@ -24,10 +10,7 @@ export const RosterSummary = () => {
   const { players, coaches, activeCoachId, rosterLimits } = useAppContext();
   const activeCoach = coaches.find((c) => c.id === activeCoachId);
 
-  const myPlayers = useMemo(
-    () => players.filter((p) => p.draftedBy === activeCoachId),
-    [players, activeCoachId],
-  );
+  const myPlayers = useMemo(() => players.filter((p) => p.draftedBy === activeCoachId), [players, activeCoachId]);
 
   const bySlot = useMemo(() => {
     const byPosition = new Map<Position, Player[]>();
@@ -67,10 +50,7 @@ export const RosterSummary = () => {
         {activeCoach ? activeCoach.name : 'Roster'}
       </Typography>
       <Box sx={{ mb: 2 }}>
-        <Stack
-          direction="row"
-          sx={{ justifyContent: 'space-between', mb: 0.5 }}
-        >
+        <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.5 }}>
           <Typography variant="body2" color="text.secondary">
             Total roster
           </Typography>
@@ -80,11 +60,7 @@ export const RosterSummary = () => {
         </Stack>
         <LinearProgress
           variant="determinate"
-          value={
-            rosterSize > 0
-              ? Math.min(100, (totalDrafted / rosterSize) * 100)
-              : 0
-          }
+          value={rosterSize > 0 ? Math.min(100, (totalDrafted / rosterSize) * 100) : 0}
         />
       </Box>
 
@@ -95,11 +71,7 @@ export const RosterSummary = () => {
           const full = list.length >= limit;
           return (
             <Box key={slot}>
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ alignItems: 'center', mb: 0.5 }}
-              >
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
                 <Chip
                   label={slot}
                   size="small"
@@ -114,15 +86,8 @@ export const RosterSummary = () => {
                 <List dense disablePadding sx={{ pl: 1 }}>
                   {list.map((p) => (
                     <ListItem key={p.id} disablePadding disableGutters>
-                      <ListItemText
-                        primary={`${p.name} (${p.team})`}
-                        slotProps={{ primary: { variant: 'body2' } }}
-                      />
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ pl: 1, whiteSpace: 'nowrap' }}
-                      >
+                      <ListItemText primary={`${p.name} (${p.team})`} slotProps={{ primary: { variant: 'body2' } }} />
+                      <Typography variant="caption" color="text.secondary" sx={{ pl: 1, whiteSpace: 'nowrap' }}>
                         Bye {p.bye}
                       </Typography>
                     </ListItem>

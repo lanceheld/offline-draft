@@ -3,15 +3,11 @@ import { hasOpenRosterSpot } from '../rosterAssignment';
 
 describe('hasOpenRosterSpot', () => {
   it('allows drafting when the dedicated position limit is not reached', () => {
-    expect(hasOpenRosterSpot({ QB: 1 }, 'QB', DEFAULT_ROSTER_LIMITS)).toBe(
-      true,
-    );
+    expect(hasOpenRosterSpot({ QB: 1 }, 'QB', DEFAULT_ROSTER_LIMITS)).toBe(true);
   });
 
   it('blocks drafting a non-flex-eligible position once its limit is reached', () => {
-    expect(hasOpenRosterSpot({ QB: 2 }, 'QB', DEFAULT_ROSTER_LIMITS)).toBe(
-      false,
-    );
+    expect(hasOpenRosterSpot({ QB: 2 }, 'QB', DEFAULT_ROSTER_LIMITS)).toBe(false);
   });
 
   it('allows a flex-eligible position to spill into an open FLEX slot', () => {

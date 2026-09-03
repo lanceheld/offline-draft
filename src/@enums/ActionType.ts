@@ -7,6 +7,8 @@ export const ActionType = {
   RenameCoach: 'RENAME_COACH',
   RemoveCoach: 'REMOVE_COACH',
   SetActiveCoach: 'SET_ACTIVE_COACH',
+  SetCoachDraftPosition: 'SET_COACH_DRAFT_POSITION',
+  SetTotalCoaches: 'SET_TOTAL_COACHES',
   SetRosterLimits: 'SET_ROSTER_LIMITS',
 } as const;
 

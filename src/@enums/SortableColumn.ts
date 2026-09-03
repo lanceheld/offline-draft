@@ -6,5 +6,4 @@ export const SortableColumn = {
   Bye: 'bye',
 } as const;
 
-export type SortableColumn =
-  (typeof SortableColumn)[keyof typeof SortableColumn];
+export type SortableColumn = (typeof SortableColumn)[keyof typeof SortableColumn];

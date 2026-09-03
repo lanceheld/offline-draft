@@ -11,5 +11,7 @@ export interface AppContextValue extends AppState {
   renameCoach: (id: string, name: string) => void;
   removeCoach: (id: string, resolution: ResolutionType) => void;
   setActiveCoach: (id: string) => void;
+  setCoachDraftPosition: (id: string, position: number) => void;
+  setTotalCoaches: (count: number) => void;
   setRosterLimits: (limits: RosterLimits) => void;
 }

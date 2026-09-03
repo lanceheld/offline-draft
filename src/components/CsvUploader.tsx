@@ -67,19 +67,8 @@ export const CsvUploader = () => {
 
   return (
     <>
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".csv,text/csv"
-        hidden
-        onChange={handleFileChange}
-      />
-      <Button
-        variant="contained"
-        startIcon={<UploadFileIcon />}
-        onClick={handleButtonClick}
-        color="primary"
-      >
+      <input ref={inputRef} type="file" accept=".csv,text/csv" hidden onChange={handleFileChange} />
+      <Button variant="contained" startIcon={<UploadFileIcon />} onClick={handleButtonClick} color="primary">
         Upload CSV
       </Button>
 
@@ -87,9 +76,8 @@ export const CsvUploader = () => {
         <DialogTitle>Replace existing player data?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Uploading this CSV will replace all {players.length} existing{' '}
-            {players.length === 1 ? 'player' : 'players'} and clear all draft
-            status for every coach. This cannot be undone. Continue?
+            Uploading this CSV will replace all {players.length} existing {players.length === 1 ? 'player' : 'players'}{' '}
+            and clear all draft status for every coach. This cannot be undone. Continue?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -106,9 +94,7 @@ export const CsvUploader = () => {
           <DialogContent>
             <Alert severity="warning" sx={{ mb: 2 }}>
               {errors.length} row(s) could not be imported.{' '}
-              {noRowsImported
-                ? 'No rows were imported.'
-                : 'Valid rows were still imported.'}
+              {noRowsImported ? 'No rows were imported.' : 'Valid rows were still imported.'}
             </Alert>
             <List dense>
               {errors.slice(0, 50).map((err) => (
