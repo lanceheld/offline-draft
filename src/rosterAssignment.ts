@@ -2,6 +2,9 @@ import type { Position } from './@enums/Position';
 import { FLEX_ELIGIBLE_POSITIONS } from './@enums/RosterSlot';
 import type { RosterLimits } from './@types/RosterLimits';
 
+export const hasRosterSpotForPosition = (position: Position, rosterLimits: RosterLimits): boolean =>
+  rosterLimits[position] > 0 || (FLEX_ELIGIBLE_POSITIONS.includes(position) && rosterLimits.FLEX > 0);
+
 export const hasOpenRosterSpot = (
   draftedCounts: Partial<Record<Position, number>>,
   position: Position,
