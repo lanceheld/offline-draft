@@ -281,6 +281,37 @@ describe('PlayerTable', () => {
     expect(within(row).getByLabelText(/already have a QB on BUF/)).toBeInTheDocument();
   });
 
+  it('hides players for a position with zero configured roster spots', () => {
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        rosterLimits: { ...DEFAULT_ROSTER_LIMITS, K: 0 },
+        players: [
+          makePlayer({ id: 'p1', name: 'Josh Allen', position: 'QB' }),
+          makePlayer({ id: 'p2', name: 'Justin Tucker', position: 'K' }),
+        ],
+      }),
+    );
+    render(<PlayerTable />);
+
+    expect(rowNames()).toEqual(['Josh Allen']);
+    expect(screen.getByText('1 of 2 players')).toBeInTheDocument();
+  });
+
+  it('keeps flex-eligible positions visible when their dedicated limit is zero but FLEX is open', () => {
+    mockedUseAppContext.mockReturnValue(
+      makeContext({
+        rosterLimits: { ...DEFAULT_ROSTER_LIMITS, RB: 0, WR: 0, FLEX: 1 },
+        players: [
+          makePlayer({ id: 'p1', name: 'Bijan Robinson', position: 'RB' }),
+          makePlayer({ id: 'p2', name: 'Justin Jefferson', position: 'WR' }),
+        ],
+      }),
+    );
+    render(<PlayerTable />);
+
+    expect(rowNames()).toEqual(['Bijan Robinson', 'Justin Jefferson']);
+  });
+
   it('shows the count of visible vs total players', async () => {
     const user = userEvent.setup();
     mockedUseAppContext.mockReturnValue(

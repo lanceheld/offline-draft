@@ -1,5 +1,5 @@
 import { DEFAULT_ROSTER_LIMITS } from '../@types/RosterLimits';
-import { hasOpenRosterSpot } from '../rosterAssignment';
+import { hasOpenRosterSpot, hasRosterSpotForPosition } from '../rosterAssignment';
 
 describe('hasOpenRosterSpot', () => {
   it('allows drafting when the dedicated position limit is not reached', () => {
@@ -29,5 +29,27 @@ describe('hasOpenRosterSpot', () => {
 
   it('treats a missing count as zero', () => {
     expect(hasOpenRosterSpot({}, 'TE', DEFAULT_ROSTER_LIMITS)).toBe(true);
+  });
+});
+
+describe('hasRosterSpotForPosition', () => {
+  it('allows a non-flex-eligible position with a nonzero dedicated limit', () => {
+    expect(hasRosterSpotForPosition('QB', DEFAULT_ROSTER_LIMITS)).toBe(true);
+  });
+
+  it('blocks a non-flex-eligible position with a zero dedicated limit', () => {
+    const limits = { ...DEFAULT_ROSTER_LIMITS, K: 0 };
+    expect(hasRosterSpotForPosition('K', limits)).toBe(false);
+  });
+
+  it('allows a flex-eligible position with a zero dedicated limit when FLEX is open', () => {
+    const limits = { ...DEFAULT_ROSTER_LIMITS, RB: 0, WR: 0, FLEX: 1 };
+    expect(hasRosterSpotForPosition('RB', limits)).toBe(true);
+    expect(hasRosterSpotForPosition('WR', limits)).toBe(true);
+  });
+
+  it('blocks a flex-eligible position when both its dedicated limit and FLEX are zero', () => {
+    const limits = { ...DEFAULT_ROSTER_LIMITS, RB: 0, WR: 0, FLEX: 0 };
+    expect(hasRosterSpotForPosition('RB', limits)).toBe(false);
   });
 });

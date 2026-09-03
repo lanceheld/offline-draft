@@ -25,7 +25,7 @@ import type { Position } from '../@enums/Position';
 import { getCurrentPickIndex, getNextPickIndexForCoach } from '../draftOrder';
 import { SortableColumn } from '../@enums/SortableColumn';
 import { SortDirection } from '../@enums/SortDirection';
-import { hasOpenRosterSpot } from '../rosterAssignment';
+import { hasOpenRosterSpot, hasRosterSpotForPosition } from '../rosterAssignment';
 import { NameFilter } from './NameFilter';
 import { PositionFilter } from './PositionFilter';
 
@@ -119,7 +119,7 @@ export const PlayerTable = () => {
   }, [players, activeCoachId]);
 
   const visiblePlayers = useMemo(() => {
-    let list = players;
+    let list = players.filter((p) => hasRosterSpotForPosition(p.position, rosterLimits));
     if (positionFilter.length > 0) {
       const set = new Set(positionFilter);
       list = list.filter((p) => set.has(p.position));
@@ -133,7 +133,7 @@ export const PlayerTable = () => {
       sorted.reverse();
     }
     return sorted;
-  }, [players, positionFilter, nameFilter, sortColumn, sortDirection]);
+  }, [players, rosterLimits, positionFilter, nameFilter, sortColumn, sortDirection]);
 
   const highestAvailablePlayerId = useMemo(() => {
     let best: Player | undefined;
